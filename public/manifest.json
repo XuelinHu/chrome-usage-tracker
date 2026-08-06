@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Chrome 使用统计",
+  "version": "0.1.0",
+  "description": "基于浏览器本地事件估算使用时长和页面资源流量。",
+  "action": {
+    "default_title": "打开 Chrome 使用统计",
+    "default_popup": "index.html"
+  },
+  "options_page": "index.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "tabs",
+    "windows",
+    "idle",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://dav.jianguoyun.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
