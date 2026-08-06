@@ -4,6 +4,7 @@
 [![Manifest](https://img.shields.io/badge/manifest-v3-34a853)](public/manifest.json)
 [![React](https://img.shields.io/badge/react-19-61dafb)](package.json)
 [![Vite](https://img.shields.io/badge/vite-6-646cff)](package.json)
+[![Build](https://github.com/XuelinHu/chrome-usage-tracker/actions/workflows/release.yml/badge.svg)](https://github.com/XuelinHu/chrome-usage-tracker/actions/workflows/release.yml)
 
 A Chrome extension that tracks browsing activity locally — usage time and page resource estimates — without sending data to third parties.
 
@@ -22,17 +23,44 @@ A Chrome extension that tracks browsing activity locally — usage time and page
 - Chrome Extension Manifest V3
 - IndexedDB
 
+## Download & Install
+
+### From GitHub Releases
+
+1. Go to [Releases](https://github.com/XuelinHu/chrome-usage-tracker/releases)
+2. Download `chrome-usage-tracker.zip` from the latest release
+3. Unzip to a local folder
+4. Open `chrome://extensions/` in Chrome
+5. Enable "Developer mode" (top right)
+6. Click "Load unpacked" and select the unzipped folder
+
+### From Source
+
+```bash
+git clone git@github.com:XuelinHu/chrome-usage-tracker.git
+cd chrome-usage-tracker
+npm install
+npm run build
+# Then load the dist/ folder as unpacked extension
+```
+
 ## Development
 
 ```bash
 npm install
 npm run dev      # Start Vite dev server
-npm run build    # Build the extension
+npm run build    # Generate icons + build extension
 ```
 
-## Install in Chrome
+## Publish to Chrome Web Store
 
-1. `npm run build`
-2. Open `chrome://extensions/`
-3. Enable "Developer mode"
-4. "Load unpacked" → select the `dist/` directory
+1. Zip the `dist/` folder (or download from Releases)
+2. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+3. Pay the one-time \$5 registration fee
+4. Click "New Item" → upload the zip
+5. Fill in description, screenshots, and privacy policy
+6. Submit for review
+
+## CI/CD
+
+GitHub Actions auto-builds the extension on every push to `master` and creates a Release with the packaged zip when a tag (e.g. `v1.0.0`) is pushed.

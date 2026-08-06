@@ -1,0 +1,45 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate icons
+        run: python scripts/generate-icons.py
+
+      - run: npm run build
+
+      - name: Package extension
+        run: |
+          cd dist
+          zip -r ../chrome-usage-tracker.zip .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chrome-usage-tracker
+          path: chrome-usage-tracker.zip
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: chrome-usage-tracker.zip
+          generate_release_notes: true

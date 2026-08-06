@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "python scripts/generate-icons.py && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
