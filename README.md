@@ -1,33 +1,38 @@
 # Chrome Usage Tracker
 
-基于 Chrome 扩展的浏览器使用统计工具，通过监听标签页事件估算使用时长和页面资源流量。
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Manifest](https://img.shields.io/badge/manifest-v3-34a853)](public/manifest.json)
+[![React](https://img.shields.io/badge/react-19-61dafb)](package.json)
+[![Vite](https://img.shields.io/badge/vite-6-646cff)](package.json)
 
-## 功能
+A Chrome extension that tracks browsing activity locally — usage time and page resource estimates — without sending data to third parties.
 
-- 按日/周/月统计浏览器使用时长
-- 估算页面资源流量（基于 Performance API）
-- 按域名排行，查看常用网站和流量消耗
-- WebDAV 同步（支持坚果云等）
-- 数据存储在本机 IndexedDB，不上传第三方
+## Features
 
-## 技术栈
+- Daily / weekly / monthly usage summaries
+- Estimated page resource traffic (via Performance API)
+- Domain ranking by time spent and data consumed
+- WebDAV sync support (Jianguoyun, Nextcloud, etc.)
+- All data stored in local IndexedDB
+
+## Tech Stack
 
 - React 19 + ECharts 6
-- Vite 6 构建
+- Vite 6
 - Chrome Extension Manifest V3
-- IndexedDB 本地存储
+- IndexedDB
 
-## 开发
+## Development
 
 ```bash
 npm install
-npm run dev      # 启动 Vite 开发服务器
-npm run build    # 构建插件
+npm run dev      # Start Vite dev server
+npm run build    # Build the extension
 ```
 
-## 安装到 Chrome
+## Install in Chrome
 
 1. `npm run build`
-2. Chrome 打开 `chrome://extensions/`
-3. 开启"开发者模式"
-4. "加载已解压的扩展程序"，选择 `dist/` 目录
+2. Open `chrome://extensions/`
+3. Enable "Developer mode"
+4. "Load unpacked" → select the `dist/` directory
