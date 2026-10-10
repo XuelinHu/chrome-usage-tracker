@@ -64,3 +64,7 @@ npm run build    # Generate icons + build extension
 ## CI/CD
 
 GitHub Actions auto-builds the extension on every push to `master` and creates a Release with the packaged zip when a tag (e.g. `v1.0.0`) is pushed.
+
+## 启动端口
+
+网页入口：4033；后台服务：无独立后端。完整启动约定见 [PORTS.md](./PORTS.md)。
