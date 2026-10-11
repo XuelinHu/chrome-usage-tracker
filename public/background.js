@@ -1,5 +1,5 @@
 const DB_NAME = "chromeUsageDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = "usageEvents";
 const CONFIG_KEY = "webdavConfig";
 
@@ -17,7 +17,13 @@ function openDatabase() {
     request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        const store = db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        store.createIndex("startedAt", "startedAt", { unique: false });
+      } else {
+        const store = request.transaction.objectStore(STORE_NAME);
+        if (!store.indexNames.contains("startedAt")) {
+          store.createIndex("startedAt", "startedAt", { unique: false });
+        }
       }
     };
     request.onsuccess = () => resolve(request.result);
@@ -36,12 +42,13 @@ async function saveUsageEvent(event) {
   db.close();
 }
 
-async function listUsageEvents() {
+async function listUsageEvents(startAt, endAt) {
   const db = await openDatabase();
   const events = await new Promise((resolve, reject) => {
     const request = db.transaction(STORE_NAME, "readonly")
       .objectStore(STORE_NAME)
-      .getAll();
+      .index("startedAt")
+      .getAll(IDBKeyRange.bound(startAt, endAt));
     request.onsuccess = () => resolve(request.result || []);
     request.onerror = () => reject(request.error);
   });
@@ -80,7 +87,8 @@ async function syncToday() {
   const baseUrl = getWebDavBaseUrl(config);
   const today = new Date().toISOString().slice(0, 10);
   const dateUrl = `${baseUrl}/${today}`;
-  const events = (await listUsageEvents()).filter((event) => new Date(event.startedAt).toISOString().slice(0, 10) === today);
+  const dayStart = Date.parse(`${today}T00:00:00.000Z`);
+  const events = await listUsageEvents(dayStart, dayStart + 24 * 60 * 60 * 1000 - 1);
 
   await makeCollection(baseUrl, config);
   await makeCollection(dateUrl, config);

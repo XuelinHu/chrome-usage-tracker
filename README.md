@@ -13,6 +13,7 @@ A Chrome extension that tracks browsing activity locally — usage time and page
 - Daily / weekly / monthly usage summaries
 - Estimated page resource traffic (via Performance API)
 - Domain ranking by time spent and data consumed
+- Paginated website detail table (10 domains per page)
 - WebDAV sync support (Jianguoyun, Nextcloud, etc.)
 - All data stored in local IndexedDB
 
@@ -49,8 +50,25 @@ npm run build
 ```bash
 npm install
 npm run dev      # Start Vite dev server
-npm run build    # Generate icons + build extension
+npm run build    # Build extension assets
+npm test         # Check detail-table pagination boundaries
 ```
+
+## Android Usage Insights
+
+`android/` contains a separate native Android app that reads per-application foreground time through Android Usage Access. It does not inspect Chrome page content or URLs. AI analysis is optional and sends only app labels, package names, and usage minutes after the user taps Analyze. The default OpenAI-compatible endpoint is the LAN model at `192.168.1.9:11434`; change the endpoint and model in AI connection settings. An optional cloud API Key is encrypted with Android Keystore and sent as a Bearer token only over HTTPS; private-LAN HTTP connections are allowed only without a key.
+
+The Android app lists 20 applications per page. Chrome dashboard history is queried through a `startedAt` IndexedDB index and bounded to the latest 31 days; background WebDAV sync reads only the current UTC day.
+
+Build the release APK with Android SDK 36 and JDK 17:
+
+```powershell
+cd android
+\.\gradlew.bat assembleRelease
+Copy-Item app\build\outputs\apk\release\app-release.apk ..\dist\usage-insights-release.apk -Force
+```
+
+The release currently uses the debug signing key for installation/testing, not store distribution. Grant Usage Access in Android Settings before viewing statistics. No database or cache server is required; usage data is queried from Android on demand.
 
 ## Publish to Chrome Web Store
 

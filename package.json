@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "python scripts/generate-icons.py && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test test/pagination.test.js"
   },
   "dependencies": {
     "echarts": "^6.0.0",

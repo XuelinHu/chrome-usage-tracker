@@ -5,8 +5,8 @@ import {
   ArrowDownUp,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   CloudUpload,
   Database,
@@ -22,9 +22,11 @@ import { clearUsageEvents, listUsageEvents } from "./lib/repository";
 import { getDeviceId, readConfig, writeConfig } from "./lib/storage";
 import { readUsageFromWebDav, syncUsageToWebDav, testWebDav } from "./lib/webdav";
 import { formatBytes, formatDuration, formatTime } from "./lib/format";
+import { paginate } from "./lib/pagination";
 
 const RANGE_LABELS = { day: "今日", week: "本周", month: "本月" };
 const TOP_RANK_LIMIT = 10;
+const SITE_PAGE_SIZE = 10;
 
 function formatWebDavError(error) {
   if (error?.message === "Failed to fetch") {
@@ -151,14 +153,13 @@ function StatCard({ icon: Icon, label, value, detail, accent }) {
 
 function Dashboard({ events, range, setRange, config, onRefresh }) {
   const [sortBy, setSortBy] = useState("seconds");
-  const [showAllSites, setShowAllSites] = useState(false);
+  const [sitePage, setSitePage] = useState(1);
   const summary = useMemo(() => summarize(events, range), [events, range]);
   const sortedSites = useMemo(
     () => [...summary.sites].sort((a, b) => b[sortBy] - a[sortBy] || b.lastActiveAt - a.lastActiveAt || a.domain.localeCompare(b.domain)),
     [summary.sites, sortBy]
   );
-  const visibleSites = showAllSites ? sortedSites : sortedSites.slice(0, TOP_RANK_LIMIT);
-  const hasMoreSites = sortedSites.length > TOP_RANK_LIMIT;
+  const sitePageData = useMemo(() => paginate(sortedSites, sitePage, SITE_PAGE_SIZE), [sortedSites, sitePage]);
   const trendOption = useMemo(() => buildTrendOption(summary.events), [summary.events]);
   const timeRankOption = useMemo(() => buildRankingOption(summary.sites, "seconds"), [summary.sites]);
   const trafficRankOption = useMemo(() => buildRankingOption(summary.sites, "bytes"), [summary.sites]);
@@ -203,15 +204,20 @@ function Dashboard({ events, range, setRange, config, onRefresh }) {
       </section>
 
       <section className="panel table-panel">
-        <div className="panel-heading table-heading"><div><span className="panel-kicker"><ArrowDownUp size={15} /> 明细数据</span><h2>网站统计</h2></div><div className="table-heading-actions"><span className="muted-label">显示 {visibleSites.length} / {sortedSites.length} 个域名</span>{hasMoreSites && <button className="detail-button" onClick={() => setShowAllSites((current) => !current)} aria-expanded={showAllSites}>{showAllSites ? <ChevronUp size={14} /> : <ChevronDown size={14} />}{showAllSites ? "收起详情" : "查看全部详情"}</button>}</div></div>
+        <div className="panel-heading table-heading"><div><span className="panel-kicker"><ArrowDownUp size={15} /> 明细数据</span><h2>网站统计</h2></div><div className="table-heading-actions"><span className="muted-label">显示 {sortedSites.length === 0 ? 0 : (sitePageData.page - 1) * SITE_PAGE_SIZE + 1}–{Math.min(sitePageData.page * SITE_PAGE_SIZE, sortedSites.length)} / {sortedSites.length} 个域名</span></div></div>
         {sortedSites.length === 0 ? <EmptyState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>网站</th><th><button className={`sort-button ${sortBy === "seconds" ? "active" : ""}`} onClick={() => setSortBy("seconds")}>使用时长 <ArrowDownUp size={13} /></button></th><th><button className={`sort-button ${sortBy === "bytes" ? "active" : ""}`} onClick={() => setSortBy("bytes")}>估算流量 <ArrowDownUp size={13} /></button></th><th><button className={`sort-button ${sortBy === "lastActiveAt" ? "active" : ""}`} onClick={() => setSortBy("lastActiveAt")}>最后活动 <ArrowDownUp size={13} /></button></th></tr></thead>
-              <tbody>{visibleSites.map((site) => <tr key={site.domain}><td><span className="domain-dot" />{site.domain}</td><td>{formatDuration(site.seconds)}</td><td>{formatBytes(site.bytes)}</td><td>{formatTime(site.lastActiveAt)}</td></tr>)}</tbody>
+              <thead><tr><th>网站</th><th><button className={`sort-button ${sortBy === "seconds" ? "active" : ""}`} onClick={() => { setSortBy("seconds"); setSitePage(1); }}>使用时长 <ArrowDownUp size={13} /></button></th><th><button className={`sort-button ${sortBy === "bytes" ? "active" : ""}`} onClick={() => { setSortBy("bytes"); setSitePage(1); }}>估算流量 <ArrowDownUp size={13} /></button></th><th><button className={`sort-button ${sortBy === "lastActiveAt" ? "active" : ""}`} onClick={() => { setSortBy("lastActiveAt"); setSitePage(1); }}>最后活动 <ArrowDownUp size={13} /></button></th></tr></thead>
+              <tbody>{sitePageData.rows.map((site) => <tr key={site.domain}><td><span className="domain-dot" />{site.domain}</td><td>{formatDuration(site.seconds)}</td><td>{formatBytes(site.bytes)}</td><td>{formatTime(site.lastActiveAt)}</td></tr>)}</tbody>
             </table>
           </div>
         )}
+        {sortedSites.length > SITE_PAGE_SIZE && <div className="table-pagination">
+          <button className="icon-button" onClick={() => setSitePage(sitePageData.page - 1)} disabled={sitePageData.page <= 1} title="上一页" aria-label="上一页"><ChevronLeft size={17} /></button>
+          <span>第 {sitePageData.page} / {sitePageData.totalPages} 页</span>
+          <button className="icon-button" onClick={() => setSitePage(sitePageData.page + 1)} disabled={sitePageData.page >= sitePageData.totalPages} title="下一页" aria-label="下一页"><ChevronRight size={17} /></button>
+        </div>}
       </section>
     </main>
   );
