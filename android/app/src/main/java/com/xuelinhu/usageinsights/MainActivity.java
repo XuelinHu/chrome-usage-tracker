@@ -56,6 +56,7 @@ import javax.crypto.spec.GCMParameterSpec;
 public final class MainActivity extends Activity {
     private static final int[] WINDOWS = {24, 24 * 7, 24 * 30};
     private static final int APP_PAGE_SIZE = 20;
+    private static final int MAX_AI_RESPONSE_BYTES = 1_048_576;
     private static final String PREFS = "usage-insights";
     private static final String API_KEY_ALIAS = "usage-insights-ai-key";
     private static final int COLOR_INK = Color.rgb(28, 42, 48);
@@ -473,6 +474,7 @@ public final class MainActivity extends Activity {
                     throw new IllegalStateException("配置 API Key 后必须使用 HTTPS");
                 }
                 connection = (HttpURLConnection) new URL(endpoint).openConnection();
+                connection.setInstanceFollowRedirects(false);
                 connection.setConnectTimeout(5000);
                 connection.setReadTimeout(30000);
                 connection.setRequestMethod("POST");
@@ -497,7 +499,12 @@ public final class MainActivity extends Activity {
                 StringBuilder response = new StringBuilder();
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
                     String line;
-                    while ((line = reader.readLine()) != null) response.append(line);
+                    while ((line = reader.readLine()) != null) {
+                        if (response.length() + line.length() > MAX_AI_RESPONSE_BYTES) {
+                            throw new IllegalStateException("AI 响应超过 1 MiB 限制");
+                        }
+                        response.append(line);
+                    }
                 }
                 if (status < 200 || status >= 300) throw new IllegalStateException("HTTP " + status);
                 String answer = new JSONObject(response.toString()).getJSONArray("choices")
