@@ -42,7 +42,7 @@ git clone git@github.com:XuelinHu/chrome-usage-tracker.git
 cd chrome-usage-tracker
 npm install
 npm run build
-# Then load the dist/ folder as unpacked extension
+# Then load the dist/extension/ folder as unpacked extension
 ```
 
 ## Development
@@ -72,7 +72,7 @@ The release currently uses the debug signing key for installation/testing, not s
 
 ## Publish to Chrome Web Store
 
-1. Zip the `dist/` folder (or download from Releases)
+1. Zip the `dist/extension/` folder (or download from Releases)
 2. Go to [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)
 3. Pay the one-time \$5 registration fee
 4. Click "New Item" → upload the zip

@@ -7,6 +7,7 @@ export default defineConfig({
   server: { port: 4033, strictPort: true },
   preview: { port: 4033, strictPort: true },
   build: {
+    outDir: "dist/extension",
     emptyOutDir: true,
     rollupOptions: {
       input: "index.html"
